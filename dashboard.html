@@ -1,0 +1,523 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Sentiment Dashboard - India</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+        
+        .articles-table {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .sentiment-positive {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .sentiment-negative {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .sentiment-neutral {
+            color: #6b7280;
+            font-weight: bold;
+        }
+        
+        .article-link {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .article-link:hover {
+            text-decoration: underline;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📰 News Sentiment Dashboard</h1>
+            <p class="subtitle">Analysis of "India" articles</p>
+        </header>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Articles</div>
+                <div class="stat-number">100</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">News Sources</div>
+                <div class="stat-number">2</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Polarity</div>
+                <div class="stat-number">0.075</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Subjectivity</div>
+                <div class="stat-number">0.382</div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Articles by News Source</h3>
+                <div class="chart-wrapper">
+                    <canvas id="sourceChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Sentiment Distribution</h3>
+                <div class="chart-wrapper">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Sentiment Polarity Distribution</h3>
+            <div class="chart-wrapper">
+                <canvas id="polarityChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="articles-table">
+            <h3 class="chart-title">Recent Articles</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Sentiment</th>
+                        <th>Polarity</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/football/articles/cew49lqxwe9o?xtor=AL-72-%5Bpartner%5D-%5Byahoo.north.america%5D-%5Bheadline%5D-%5Bsport%5D-%5Bbizdev%5D-%5Bisapi%5D" target="_blank" class="article-link">Choudhury on target twice for Bangladesh...</a></td>
+                        <td>2025-11-14</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.188</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/cj97gelw11mo" target="_blank" class="article-link">Vote counting under way in Indian state election that is key test for Modi...</a></td>
+                        <td>2025-11-14</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.133</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/c1lq1e1d79lo" target="_blank" class="article-link">Ex-Bangladesh leader tells BBC she's not guilty of crimes against humanity...</a></td>
+                        <td>2025-11-14</td>
+                        <td class="sentiment-negative">NEGATIVE</td>
+                        <td>-0.125</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/cz7pdyy924wo" target="_blank" class="article-link">Which players will be most important in the Ashes? - your choices...</a></td>
+                        <td>2025-11-13</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.425</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/c5ylw0lw131o" target="_blank" class="article-link">Wood injury concern for England in tour match...</a></td>
+                        <td>2025-11-13</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.225</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/cn51qdg5ywgo" target="_blank" class="article-link">The case for and against counting castes in India...</a></td>
+                        <td>2025-11-13</td>
+                        <td class="sentiment-neutral">NEUTRAL</td>
+                        <td>0.068</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/ce8zkdemv2ko?xtor=AL-72-%5Bpartner%5D-%5Byahoo.north.america%5D-%5Bheadline%5D-%5Bnews%5D-%5Bbizdev%5D-%5Bisapi%5D" target="_blank" class="article-link">Delhi blast was terror incident, Indian government says...</a></td>
+                        <td>2025-11-12</td>
+                        <td class="sentiment-negative">NEGATIVE</td>
+                        <td>-0.200</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/ce8zkdemv2ko" target="_blank" class="article-link">Delhi blast was terror incident, Indian government says...</a></td>
+                        <td>2025-11-12</td>
+                        <td class="sentiment-negative">NEGATIVE</td>
+                        <td>-0.200</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/cn7e53evpgro" target="_blank" class="article-link">Wicketkeeper Verreynne signs new Notts deal...</a></td>
+                        <td>2025-11-12</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.136</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/c797yy9d59wo" target="_blank" class="article-link">Stokes defends England criticism from 'has-beens'...</a></td>
+                        <td>2025-11-12</td>
+                        <td class="sentiment-neutral">NEUTRAL</td>
+                        <td>-0.071</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/c751yyz44d2o" target="_blank" class="article-link">Schools go hybrid as Delhi's air quality worsens...</a></td>
+                        <td>2025-11-12</td>
+                        <td class="sentiment-negative">NEGATIVE</td>
+                        <td>-0.333</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/crklp1y81keo" target="_blank" class="article-link">India's start-ups fire up public markets amid valuation concerns...</a></td>
+                        <td>2025-11-12</td>
+                        <td class="sentiment-negative">NEGATIVE</td>
+                        <td>-0.250</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/c051y6jle27o" target="_blank" class="article-link">Modi says those behind Delhi blast that killed eight 'will not be spared'...</a></td>
+                        <td>2025-11-11</td>
+                        <td class="sentiment-negative">NEGATIVE</td>
+                        <td>-0.300</td>
+                    </tr>
+
+                    <tr>
+                        <td>CNN</td>
+                        <td><a href="https://www.cnn.com/2025/11/10/world/new-delhi-explosion-red-fort-intl" target="_blank" class="article-link">India on edge after deadly car explosion in capital region. Here’s what we know...</a></td>
+                        <td>2025-11-11</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.150</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/czxk54y27wjo" target="_blank" class="article-link">Trescothick hints Pope will be retained at three...</a></td>
+                        <td>2025-11-11</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.325</td>
+                    </tr>
+
+                    <tr>
+                        <td>CNN</td>
+                        <td><a href="https://www.cnn.com/2025/11/11/world/blast-islamabad-pakistan-intl" target="_blank" class="article-link">At least 12 killed in blast outside court in Islamabad, Pakistan | CNN...</a></td>
+                        <td>2025-11-11</td>
+                        <td class="sentiment-neutral">NEUTRAL</td>
+                        <td>-0.057</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/articles/ckgk057ly30o" target="_blank" class="article-link">The WW1 piper who marched through gas, bullets and bombs to save his regiment...</a></td>
+                        <td>2025-11-10</td>
+                        <td class="sentiment-neutral">NEUTRAL</td>
+                        <td>0.000</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/news/videos/cly2pknvjvlo" target="_blank" class="article-link">Verified videos show aftermath of explosion in Delhi...</a></td>
+                        <td>2025-11-10</td>
+                        <td class="sentiment-neutral">NEUTRAL</td>
+                        <td>-0.033</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/c4gw9yq8d0lo" target="_blank" class="article-link">Hampshire pace talent Jack signs new contract...</a></td>
+                        <td>2025-11-10</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.143</td>
+                    </tr>
+
+                    <tr>
+                        <td>BBC News</td>
+                        <td><a href="https://www.bbc.com/sport/cricket/articles/c36422n92l5o" target="_blank" class="article-link">India win sparks surge in sales for T20 World Cup...</a></td>
+                        <td>2025-11-10</td>
+                        <td class="sentiment-positive">POSITIVE</td>
+                        <td>0.267</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>Generated from articles.json | Total Articles Analyzed: 100</p>
+            <p>Search Query: "India" | Date Range: Last 1 years</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Source Chart
+        const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+        new Chart(sourceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['BBC News', 'CNN'],
+                datasets: [{
+                    label: 'Number of Articles',
+                    data: [90, 10],
+                    backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Sentiment Chart
+        const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+        new Chart(sentimentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['positive', 'negative', 'neutral'],
+                datasets: [{
+                    data: [41, 18, 41],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(239, 68, 68, 0.7)',
+                        'rgba(107, 114, 128, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(107, 114, 128, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Polarity Distribution Chart
+        const polarityCtx = document.getElementById('polarityChart').getContext('2d');
+        const polarityData = [0.188, 0.133, -0.125, 0.425, 0.225, 0.068, -0.2, -0.2, 0.136, -0.071, -0.333, -0.25, -0.3, 0.15, 0.325, -0.057, 0.0, -0.033, 0.143, 0.267, 0.3, 0.0, -0.03, 0.292, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, -0.2, 0.533, -0.4, -0.4, 0.117, 0.352, 0.05, 0.283, 0.0, 0.0, 0.0, 0.138, 0.0, 0.2, 0.09, 0.0, -0.11, 0.167, -0.021, 0.333, 0.393, -0.25, 0.058, 0.38, 0.0, 0.0, -0.004, 0.25, 0.0, 0.033, -0.275, -0.4, 0.0, -0.188, 0.0, 0.04, 0.607, 0.05, 0.05, -0.137, 0.275, 0.0, 0.42, 0.117, 0.667, 0.325, 0.133, 0.333, 0.141, 0.15, 0.0, 0.0, 0.097, 0.146, 0.25, 0.8, 0.0, -0.333, 0.35, -0.135, 0.068, 0.0, 0.0, 0.36, 0.25, 0.362, 0.188, 0.212, 0.0, 0.058];
+        
+        // Create histogram bins
+        const bins = {};
+        polarityData.forEach(value => {
+            const bin = Math.round(value * 10) / 10;
+            bins[bin] = (bins[bin] || 0) + 1;
+        });
+        
+        const binLabels = Object.keys(bins).sort((a, b) => a - b);
+        const binValues = binLabels.map(label => bins[label]);
+        
+        new Chart(polarityCtx, {
+            type: 'bar',
+            data: {
+                labels: binLabels,
+                datasets: [{
+                    label: 'Article Count',
+                    data: binValues,
+                    backgroundColor: 'rgba(118, 75, 162, 0.7)',
+                    borderColor: 'rgba(118, 75, 162, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Polarity Score (-1 to +1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
