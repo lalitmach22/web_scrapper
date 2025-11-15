@@ -1,0 +1,32 @@
+# config.py.template
+# Copy this file to config.py and add your actual API key
+
+# NewsAPI configuration
+# Get your free API key from: https://newsapi.org/register
+NEWS_API_KEY = "YOUR_API_KEY_HERE"  # Replace with your actual API key
+USE_NEWS_API = True  # Set to True to use NewsAPI for historical data
+
+# Maximum number of articles to fetch (will make multiple requests if needed)
+MAX_ARTICLES = 300  # Free tier allows up to 100 requests/day
+
+# RSS feeds for the news websites (used when USE_NEWS_API is False)
+NEWS_SOURCES = {
+    "reuters": "https://cdn.feedcontrol.net/8/1115-TvWAhu4G064WT.xml",
+    "bbc": "http://newsrss.bbc.co.uk/rss/newsonline_uk_edition/world/rss.xml",
+    "washington_post": "https://feeds.washingtonpost.com/rss/world",
+    "cnn": "http://rss.cnn.com/rss/cnn_world.rss",
+}
+
+# NewsAPI domains (for US sources) - Free tier alternative to sources parameter
+# Using domains instead of sources as it's more flexible with free tier
+NEWS_API_DOMAINS = "cnn.com,reuters.com,bbc.com,washingtonpost.com"
+
+# Search query
+SEARCH_QUERY = "India"
+
+# Date range (in years) - Note: Free tier only supports last 30 days
+# For 1 year of data, you need a paid plan
+DATE_RANGE_YEARS = 1  # Will be limited to 30 days on free tier
+
+# Output file path
+OUTPUT_FILE = "articles.json"
