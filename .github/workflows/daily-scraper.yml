@@ -26,17 +26,16 @@ jobs:
         pip install -r requirements.txt
         python -m textblob.download_corpora
     
-    - name: Create config file
-      run: |
-        cp config.py.template config.py
-        sed -i "s/YOUR_API_KEY_HERE/${{ secrets.NEWS_API_KEY }}/" config.py
-    
     - name: Run daily scraper
+      env:
+        NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
       run: |
         python daily_scraper.py
       continue-on-error: true
     
     - name: Generate dashboard
+      env:
+        NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
       run: |
         python dashboard.py
       continue-on-error: true
